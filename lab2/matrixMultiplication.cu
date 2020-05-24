@@ -46,7 +46,7 @@ void MatMul(const Matrix A, const Matrix B, Matrix C) {
 
     // call kernel
     dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE); // define the block size (what is the best value?)
-    dim3 dimGrid(C.width/BLOCK_SIZE, C.height/BLOCK_SIZE); //  choose grid size depending on problem size
+    dim3 dimGrid(C.width / BLOCK_SIZE, C.height / BLOCK_SIZE); //  choose grid size depending on problem size
 
     MatMulKernel<<<dimGrid, dimBlock>>>(d_A, d_B, d_C);
 
@@ -119,10 +119,10 @@ void printPerformance(float timeGPU, float timeCPU, double flopsPerMatrixMul, do
 
 void expand(int Height, Matrix &A, Matrix &B) {
     int fileDim = 16;
-    for (int i = 1; i <= (Height / fileDim)*(Height/fileDim); i++) {
-        for (int j = 0; j < fileDim*fileDim; j++) {
-            A.elements[i*fileDim*fileDim+j] = A.elements[j];
-            B.elements[i*fileDim*fileDim+j] = B.elements[j];
+    for (int i = 1; i <= (Height / fileDim) * (Height / fileDim); i++) {
+        for (int j = 0; j < fileDim * fileDim; j++) {
+            A.elements[i * fileDim * fileDim + j] = A.elements[j];
+            B.elements[i * fileDim * fileDim + j] = B.elements[j];
         }
     }
 
@@ -142,99 +142,98 @@ int main() {
     }
     fprintf(fp, "n,blocksPerGrid,threadsPerBlock,timeCPU,timeGPU,gflopsCPU,gflopsGPU\n");
 
-    for(int Height = 640; Height <= 1600; Height+=16*20) {
-        int Width = Height;
+    int Height = 512;
+    int Width = Height;
 
-        Matrix A;
-        Matrix B;
-        Matrix C;
-        Matrix D;
+    Matrix A;
+    Matrix B;
+    Matrix C;
+    Matrix D;
 
-        A.width = Width;
-        B.width = Width;
-        C.width = Width;
-        D.width = Width;
+    A.width = Width;
+    B.width = Width;
+    C.width = Width;
+    D.width = Width;
 
-        A.height = Height;
-        B.height = Height;
-        C.height = Width;
-        D.height = Width;
+    A.height = Height;
+    B.height = Height;
+    C.height = Width;
+    D.height = Width;
 
-        A.elements = new float[Width * Width];
-        B.elements = new float[Width * Width];
-        C.elements = new float[Width * Width];
-        D.elements = new float[Width * Width];
+    A.elements = new float[Width * Width];
+    B.elements = new float[Width * Width];
+    C.elements = new float[Width * Width];
+    D.elements = new float[Width * Width];
 
-        //fill matrices
-        std::ifstream A_input;
-        std::ifstream B_input;
-        A_input.open("A.txt");
-        B_input.open("B.txt");
+    //fill matrices
+    std::ifstream A_input;
+    std::ifstream B_input;
+    A_input.open("A.txt");
+    B_input.open("B.txt");
 
-        float a, b;
+    float a, b;
+    A_input >> a;
+    B_input >> b;
+    int i = 0;
+    while (!A_input.eof()) {
+        A.elements[i] = a;
+        B.elements[i] = b;
         A_input >> a;
         B_input >> b;
-        int i = 0;
-        while (!A_input.eof()) {
-            A.elements[i] = a;
-            B.elements[i] = b;
-            A_input >> a;
-            B_input >> b;
-            i += 1;
-        }
-        A_input.close();
-        B_input.close();
+        i += 1;
+    }
+    A_input.close();
+    B_input.close();
 
-        expand(Height, A, B);
+    expand(Height, A, B);
 
 //przygotowanie i start timera
-        StopWatchInterface *timer = NULL;
-        sdkCreateTimer(&timer);
-        sdkResetTimer(&timer);
-        sdkStartTimer(&timer);
+    StopWatchInterface *timer = NULL;
+    sdkCreateTimer(&timer);
+    sdkResetTimer(&timer);
+    sdkStartTimer(&timer);
 
-        MatMul(A, B, C);
+    MatMul(A, B, C);
 
-        //synchronizacja wątków i zatrzymanie timera
-        cudaThreadSynchronize();
-        sdkStopTimer(&timer);
-        float timeGPU = sdkGetTimerValue(&timer);
-        sdkDeleteTimer(&timer);
+    //synchronizacja wątków i zatrzymanie timera
+    cudaThreadSynchronize();
+    sdkStopTimer(&timer);
+    float timeGPU = sdkGetTimerValue(&timer);
+    sdkDeleteTimer(&timer);
 
-        std::ofstream C_output;
-        C_output.open("C.txt");
-        for (int i = 0; i < Width; i++) {
-            for (int j = 0; j < Width; j++)
-                C_output << C.elements[i * Width + j] << "\t";
-            C_output << endl;
-        }
-
-
-        clock_t tStart = clock();
-
-        CPUMatMull(A, B, D);
-
-        clock_t tim = (clock() - tStart);
-        float timeCPU = (float) tim / CLOCKS_PER_SEC * 1000;
-
-        double flopsPerMatrixMul = 2.0 * (double) A.width * (double) A.height * (double) B.width;
-        double gigaFlops = (flopsPerMatrixMul * 1.0e-9f) / (timeCPU / 1000.0f);
-        double gigaFlopsGPU = (flopsPerMatrixMul * 1.0e-9f) / (timeGPU / 1000.0f);
-        printPerformance(timeGPU, timeCPU, flopsPerMatrixMul, gigaFlops, gigaFlopsGPU);
-
-        int grid = C.width / BLOCK_SIZE;
-        fprintf(fp, "%i,%i,%i,%f,%f,%f,%f\n",
-                Width * Width,
-                grid,
-                BLOCK_SIZE,
-                timeCPU,
-                timeGPU,
-                gigaFlops,
-                gigaFlopsGPU
-        );
-
-
-        check(C, D);
+    std::ofstream C_output;
+    C_output.open("C.txt");
+    for (int i = 0; i < Width; i++) {
+        for (int j = 0; j < Width; j++)
+            C_output << C.elements[i * Width + j] << "\t";
+        C_output << endl;
     }
+
+
+    clock_t tStart = clock();
+
+    CPUMatMull(A, B, D);
+
+    clock_t tim = (clock() - tStart);
+    float timeCPU = (float) tim / CLOCKS_PER_SEC * 1000;
+
+    double flopsPerMatrixMul = 2.0 * (double) A.width * (double) A.height * (double) B.width;
+    double gigaFlops = (flopsPerMatrixMul * 1.0e-9f) / (timeCPU / 1000.0f);
+    double gigaFlopsGPU = (flopsPerMatrixMul * 1.0e-9f) / (timeGPU / 1000.0f);
+    printPerformance(timeGPU, timeCPU, flopsPerMatrixMul, gigaFlops, gigaFlopsGPU);
+
+    int grid = C.width / BLOCK_SIZE;
+    fprintf(fp, "%i,%i,%i,%f,%f,%f,%f\n",
+            Width * Width,
+            grid,
+            BLOCK_SIZE,
+            timeCPU,
+            timeGPU,
+            gigaFlops,
+            gigaFlopsGPU
+    );
+
+
+    check(C, D);
 }
 	

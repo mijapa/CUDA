@@ -1,0 +1,30 @@
+N  ,blocksPerGrid,threadsPerBlock,type   ,occupancyTheoretical,occupancyAchieved
+128,64           ,2              ,texture,50                  ,45.1
+
+128,32           ,4              ,texture,50                  ,43.9
+128,32           ,4              ,texture,50                  ,44
+128,32           ,4              ,texture,50                  ,43.7
+128,32           ,4              ,texture,50                  ,43.6
+
+128,26           ,5              ,texture,50                  ,45.2
+128,26           ,5              ,texture,50                  ,45.2
+128,26           ,5              ,texture,50                  ,45.3
+128,26           ,5              ,texture,50                  ,44.7
+128,26           ,5              ,texture,50                  ,45.2
+128,26           ,5              ,texture,50                  ,45.2
+
+128,22           ,6              ,texture,100                 ,84.3
+128,22           ,6              ,texture,100                 ,81.6
+128,22           ,6              ,texture,100                 ,81.6
+128,22           ,6              ,texture,100                 ,82.6
+
+128,16           ,8              ,texture,100                 ,82
+128,16           ,8              ,texture,100                 ,82.3
+
+128,8            ,16             ,texture,100                 ,83.2
+128,8            ,16             ,texture,100                 ,82
+128,8            ,16             ,texture,100                 ,82.9
+
+128,4            ,32             ,texture,100                 ,78.7
+128,4            ,32             ,texture,100                 ,79
+128,4            ,32             ,texture,100                 ,84.9

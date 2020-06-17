@@ -1,0 +1,16 @@
+N,blocksPerGrid,threadsPerBlock,timeGPU,type
+128,8,16,0.553203,texture
+128,8,16,0.524239,texture
+128,8,16,0.528091,texture
+128,8,16,0.512752,texture
+128,8,16,0.532167,texture
+128,8,16,0.605414,global
+128,8,16,0.688812,global
+128,8,16,0.550009,global
+128,8,16,0.588830,global
+128,8,16,0.596060,global
+128,8,16,0.772698,shared
+128,8,16,0.792414,shared
+128,8,16,0.739909,shared
+128,8,16,0.791899,shared
+128,8,16,0.777236,shared
